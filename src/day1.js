@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const parseFile = (filePath: string = 'input.day1.txt') => {
-  const file = fs.readFileSync(path.resolve('ínputs', filePath), 'utf8');
+  const file = fs.readFileSync(path.resolve('inputs', filePath), 'utf8');
 
   const lines = file.split('\n');
   return lines.reduce((acc, val) =>
