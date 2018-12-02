@@ -1,8 +1,8 @@
 {
-  "name": "kata-coding",
+  "name": "advent-of-code-2018",
   "version": "1.0.0",
-  "description": "Kata implementations in Javascript",
-  "main": "src/KataBankOCR.js",
+  "description": "Implementation of the challenges in Javascript",
+  "main": "src/day1.js",
   "author": "Sun-tea",
   "license": "MIT",
   "scripts": {
