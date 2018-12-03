@@ -1,14 +1,5 @@
 // Day 2: Inventory Management System
-
-import fs from 'fs';
-import path from 'path';
-
-const parseFile = (filePath: string = 'day2.txt') => {
-  const file = fs.readFileSync(path.resolve('inputs', filePath), 'utf8');
-  const content = file.split('\n');
-  console.log(`part1: ${part1(content)}`);
-  console.log(`part2: ${part2(content)}`);
-};
+import { parseFile } from 'helpers';
 
 const part1 = ids => {
   const occurences = ids.reduce((acc, id) => {
@@ -72,5 +63,8 @@ const part2 = ids => {
 
 (() => {
   const args = process.argv.slice(2);
-  parseFile(args[0]);
+  const filePath = args[0] || 'day2.txt';
+  const content = parseFile(filePath);
+  console.log(`part1: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();

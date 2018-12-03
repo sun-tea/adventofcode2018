@@ -1,14 +1,5 @@
 // Day 1: Chronal Calibration
-
-import fs from 'fs';
-import path from 'path';
-
-const parseFile = (filePath: string = 'day1.txt') => {
-  const file = fs.readFileSync(path.resolve('inputs', filePath), 'utf8');
-  const content = file.split('\n');
-  console.log(`part1: ${part1(content)}`);
-  console.log(`part2: ${part2(content)}`);
-};
+import { parseFile } from 'helpers';
 
 const part1 = content =>
   content.reduce((acc, val) => Number(acc) + Number(val), 0);
@@ -30,5 +21,8 @@ const part2 = content => {
 
 (() => {
   const args = process.argv.slice(2);
-  parseFile(args[0]);
+  const filePath = args[0] || 'day1.txt';
+  const content = parseFile(filePath);
+  console.log(`part1: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();

@@ -2,11 +2,8 @@ var path = require('path');
 // var webpack = require('webpack');
 
 module.exports = {
+  devtool: 'source-map',
   entry: './src/KataBankOCR.js',
-  output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'main.bundle.js',
-  },
   module: {
     rules: [
       {
@@ -21,12 +18,18 @@ module.exports = {
       },
     ],
   },
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'main.bundle.js',
+  },
+  node: {
+    __dirname: true,
+  },
+  resolve: {
+    modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+  },
   stats: {
     colors: true,
   },
-  devtool: 'source-map',
   target: 'node',
-  node: {
-    __dirname: true,
-  }
 };
