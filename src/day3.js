@@ -1,10 +1,10 @@
 // Day 3: No Matter How You Slice It
 import { parseFile } from 'helpers';
 
-const part1 = content => {
+const getClaims = content => {
   const regex = new RegExp('^#(\\d+)\\s@\\s(\\d+),(\\d+):\\s(\\d+)x(\\d+)$');
 
-  const claims = content.map(line => {
+  return content.map(line => {
     const [, id, x, y, weight, height] = regex
       .exec(line)
       .map(i => parseInt(i, 10));
@@ -16,7 +16,9 @@ const part1 = content => {
       height,
     };
   });
+};
 
+export const getFabric = claims => {
   const fabric = [];
   claims.forEach(claim => {
     for (let i = claim.x; i < claim.x + claim.weight; i++) {
@@ -30,6 +32,11 @@ const part1 = content => {
     }
   });
 
+  return fabric;
+};
+
+const part1 = content => {
+  const fabric = getFabric(getClaims(content));
   return fabric.reduce(
     (sumRow, row) =>
       sumRow +
