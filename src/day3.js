@@ -45,9 +45,32 @@ const part1 = content => {
   );
 };
 
+const part2 = content => {
+  const claims = getClaims(content);
+  const fabric = getFabric(claims);
+
+  for (let claim of claims) {
+    let abortCurrentClaimCheck = false;
+    for (let i = claim.x; i < claim.x + claim.weight; i++) {
+      for (let j = claim.y; j < claim.y + claim.height; j++) {
+        if (fabric[i][j] > 1) {
+          abortCurrentClaimCheck = true;
+          break;
+        }
+      }
+      if (abortCurrentClaimCheck) {
+        break;
+      } else if (i === claim.x + claim.weight - 1) {
+        return claim.id;
+      }
+    }
+  }
+};
+
 (() => {
   const args = process.argv.slice(2);
   const filePath = args[0] || 'day3.txt';
   const content = parseFile(filePath);
   console.log(`part1: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();
