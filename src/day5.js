@@ -22,6 +22,17 @@ const triggerPolymerReaction = polymer => {
 };
 
 const part1 = content => triggerPolymerReaction(content).length;
+
+const part2 = content => {
+  const polymer = triggerPolymerReaction(content);
+  let strippedPolymers = [];
+
+  for (let i = 65; i <= 90; i++) {
+    const regex = new RegExp(String.fromCharCode(i), 'gi');
+    const strippedPolymer = polymer.replace(regex, '');
+    strippedPolymers.push(triggerPolymerReaction(strippedPolymer));
+  }
+  return Math.min(...strippedPolymers.map(polymer => polymer.length));
 };
 
 (() => {
@@ -29,5 +40,5 @@ const part1 = content => triggerPolymerReaction(content).length;
   const filePath = args[0] || 'day5.txt';
   const [content] = parseFile(filePath);
   console.log(`part1: ${part1(content)}`);
-  // console.log(`part2: ${part2(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();
