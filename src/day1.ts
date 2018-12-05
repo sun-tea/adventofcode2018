@@ -1,9 +1,9 @@
 // Day 1: Chronal Calibration
 import { parseFile } from 'helpers';
 
-const part1 = content =>
+const part1 = (content) =>
   content.reduce((acc, val) => Number(acc) + Number(val), 0);
-const part2 = content => {
+const part2 = (content) => {
   let total = 0;
   let acc = [total];
 

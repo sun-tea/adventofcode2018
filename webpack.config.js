@@ -1,32 +1,27 @@
 var path = require('path');
-// var webpack = require('webpack');
 
 module.exports = {
   devtool: 'source-map',
-  entry: './src/KataBankOCR.js',
+  entry: './src/day1.js',
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(ts|js)$/,
         exclude: /node_modules/,
         use: ['babel-loader'],
       },
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: ['babel-loader', 'eslint-loader'],
-      },
     ],
+  },
+  node: {
+    __dirname: true,
   },
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'main.bundle.js',
   },
-  node: {
-    __dirname: true,
-  },
   resolve: {
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+    extensions: ['.ts', '.js', '.json'],
   },
   stats: {
     colors: true,

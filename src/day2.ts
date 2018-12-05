@@ -1,12 +1,12 @@
 // Day 2: Inventory Management System
 import { parseFile } from 'helpers';
 
-const part1 = ids => {
+const part1 = (ids) => {
   const occurences = ids.reduce((acc, id) => {
     let two = false;
     let three = false;
 
-    id.split('').map(letter => {
+    id.split('').map((letter) => {
       const count = (id.match(new RegExp(letter, 'g')) || []).length;
       if (count === 2) {
         two = true;
@@ -19,12 +19,12 @@ const part1 = ids => {
   }, []);
 
   return (
-    occurences.filter(occ => occ.two).length *
-    occurences.filter(occ => occ.three).length
+    occurences.filter((occ) => occ.two).length *
+    occurences.filter((occ) => occ.three).length
   );
 };
 
-const part2 = ids => {
+const part2 = (ids) => {
   let result;
   ids.forEach((line, i, ids) => {
     const currentId = line.split('');

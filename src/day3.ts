@@ -1,13 +1,23 @@
 // Day 3: No Matter How You Slice It
 import { parseFile } from 'helpers';
 
-const getClaims = content => {
+type Claim = {
+  id: number;
+  x: number;
+  y: number;
+  weight: number;
+  height: number;
+};
+
+const compose = (...fns) => (x) => fns.reduceRight((v, f) => f(v), x);
+
+const getClaims = (content): Claim[] => {
   const regex = new RegExp('^#(\\d+)\\s@\\s(\\d+),(\\d+):\\s(\\d+)x(\\d+)$');
 
-  return content.map(line => {
+  return content.map((line) => {
     const [, id, x, y, weight, height] = regex
       .exec(line)
-      .map(i => parseInt(i, 10));
+      .map((i) => parseInt(i, 10));
     return {
       id,
       x,
@@ -18,9 +28,9 @@ const getClaims = content => {
   });
 };
 
-export const getFabric = claims => {
+const getFabric = (claims: Claim[]): number[][] => {
   const fabric = [];
-  claims.forEach(claim => {
+  claims.forEach((claim) => {
     for (let i = claim.x; i < claim.x + claim.weight; i++) {
       if (!fabric[i]) {
         fabric[i] = [];
@@ -35,8 +45,11 @@ export const getFabric = claims => {
   return fabric;
 };
 
-const part1 = content => {
-  const fabric = getFabric(getClaims(content));
+const part1 = (content) => {
+  const fabric = compose(
+    getFabric,
+    getClaims
+  )(content);
   return fabric.reduce(
     (sumRow, row) =>
       sumRow +
@@ -45,7 +58,7 @@ const part1 = content => {
   );
 };
 
-const part2 = content => {
+const part2 = (content) => {
   const claims = getClaims(content);
   const fabric = getFabric(claims);
 

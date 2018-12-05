@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "esModuleInterop": true,
+    "lib": ["es2016"],
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "outDir": "build",
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5"
+  },
+  "exclude": ["build", "node_modules"]
+}

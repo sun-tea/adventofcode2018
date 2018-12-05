@@ -1,7 +1,7 @@
 // Day 5: Chronal Calibration
 import { parseFile } from 'helpers';
 
-const triggerPolymerReaction = polymer => {
+const triggerPolymerReaction = (polymer: string): string => {
   let index = 0;
   const lower = /[a-z]/;
   const upper = /[A-Z]/;
@@ -21,18 +21,18 @@ const triggerPolymerReaction = polymer => {
   return polymer;
 };
 
-const part1 = content => triggerPolymerReaction(content).length;
+const part1 = (content) => triggerPolymerReaction(content).length;
 
-const part2 = content => {
+const part2 = (content) => {
   const polymer = triggerPolymerReaction(content);
-  let strippedPolymers = [];
+  let strippedPolymers: string[] = [];
 
   for (let i = 65; i <= 90; i++) {
     const regex = new RegExp(String.fromCharCode(i), 'gi');
     const strippedPolymer = polymer.replace(regex, '');
     strippedPolymers.push(triggerPolymerReaction(strippedPolymer));
   }
-  return Math.min(...strippedPolymers.map(polymer => polymer.length));
+  return Math.min(...strippedPolymers.map((polymer) => polymer.length));
 };
 
 (() => {
