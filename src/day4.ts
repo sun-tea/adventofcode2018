@@ -2,45 +2,28 @@
 import { parseFile } from 'helpers';
 
 type Shift = {
-  date: Date;
-  guardId: number;
+  date: string;
+  guardId: string;
   minutes: number[];
 };
 
-const timeRegex = new RegExp(
-  '^\\[(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})\\].*$'
-);
 const shiftRegex = new RegExp(
   '^\\[(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})\\] (falls asleep|wakes up|Guard #(\\d+) begins shift)$'
 );
 
 const getMatchingShiftId = (
   schedule: Shift[],
-  guardId: number,
-  day: number,
-  month: number,
-  year: number
+  date: string,
+  guardId: string
 ): number =>
-  schedule.findIndex((row) => {
-    const rowMonth = row.date.getMonth() + 1;
-    return (
-      row.guardId === guardId &&
-      (parseInt(
-        `${row.date.getDate() > 9 ? '' : '0'}${row.date.getDate()}`,
-        10
-      ) === day &&
-        parseInt(`${rowMonth > 9 ? '' : '0'}${rowMonth}`, 10) === month &&
-        row.date.getFullYear() === year)
-    );
-  });
+  schedule.findIndex((row) => row.date === date && row.guardId === guardId);
+
+const parseAttributes = (shift) =>
+  shiftRegex.exec(shift).map((i) => parseInt(i, 10));
 
 const sortSchedule = (prev, next) => {
-  const [, yearP, monthP, dayP, hourP, minuteP] = timeRegex
-    .exec(prev)
-    .map((i) => parseInt(i, 10));
-  const [, yearN, monthN, dayN, hourN, minuteN] = timeRegex
-    .exec(next)
-    .map((i) => parseInt(i, 10));
+  const [, yearP, monthP, dayP, hourP, minuteP] = parseAttributes(prev);
+  const [, yearN, monthN, dayN, hourN, minuteN] = parseAttributes(next);
   return (
     yearP - yearN ||
     monthP - monthN ||
@@ -54,20 +37,23 @@ const createSchedule = (content): Shift[] => {
   let lastGuardId;
 
   return content.reduce((schedule: Shift[], line) => {
-    const [, year, month, day, hours, minutes, type, guardId] = shiftRegex
-      .exec(line)
-      .map((e, i) => (i !== 6 ? parseInt(e, 10) : e));
+    const [, year, month, day, hours, minutes, type, guardId] = shiftRegex.exec(
+      line
+    );
+    const date = new Date(`${year}-${month}-${day}`);
+    if (hours === '23') {
+      date.setDate(date.getDate() + 1);
+    }
+    let formattedDate = `${year}-${
+      date.getMonth() < 9 ? '0' + month + 1 : month + 1
+    }-${date.getDate() < 10 ? '0' + date.getDate() : date.getDate()}`;
 
-    if ((<string>type).startsWith('Guard')) {
+    if (type.startsWith('Guard')) {
       lastGuardId = guardId;
-      let date = new Date(`${year}-${month}-${day}`);
-      if (hours === 23) {
-        date.setDate(date.getDate() + 1);
-      }
       return [
         ...schedule,
         {
-          date,
+          date: formattedDate,
           guardId,
           minutes: [],
         },
@@ -75,16 +61,12 @@ const createSchedule = (content): Shift[] => {
     } else {
       const matchingShiftId = getMatchingShiftId(
         schedule,
-        <number>lastGuardId,
-        <number>day,
-        <number>month,
-        <number>year
+        formattedDate,
+        lastGuardId
       );
       if (matchingShiftId !== -1) {
-        for (let i = <number>minutes; i < 60; i++) {
-          schedule[matchingShiftId].minutes[i] = (<string>type).startsWith(
-            'falls'
-          )
+        for (let i = parseInt(minutes, 10); i < 60; i++) {
+          schedule[matchingShiftId].minutes[i] = type.startsWith('falls')
             ? 1
             : 0;
         }
@@ -115,12 +97,12 @@ const part1 = (content) => {
     guardsBoard[shift.guardId] += shift.minutes.filter((m) => m === 1).length;
   });
 
-  let mostAsleepGuard: number;
+  let mostAsleepGuard;
   let highestNap = 0;
   for (let guardBoardId in guardsBoard) {
     if (highestNap < guardsBoard[guardBoardId]) {
       highestNap = guardsBoard[guardBoardId];
-      mostAsleepGuard = parseInt(guardBoardId, 10);
+      mostAsleepGuard = guardBoardId;
     }
   }
 
