@@ -123,9 +123,42 @@ const part1 = content => {
   );
 };
 
+const part2 = content => {
+  content.sort(sortSchedule);
+  const { schedule } = createSchedule(content);
+
+  const mergedSchedule = schedule.reduce((acc, shift) => {
+    let existingMergedShifts = acc[shift.guardId] || [];
+    const minutes = [];
+    for (let i = 0; i < 60; i++) {
+      minutes.push((existingMergedShifts[i] || 0) + (shift.minutes[i] || 0));
+    }
+    return {
+      ...acc,
+      [shift.guardId]: minutes,
+    };
+  }, {});
+
+  let sleepiestGuard;
+  let sleepiestMinute;
+  let sleepiestMinuteOccurences = 0;
+  for (let i = 0; i < 60; i++) {
+    for (let scheduleId in mergedSchedule) {
+      if (sleepiestMinuteOccurences < mergedSchedule[scheduleId][i]) {
+        sleepiestGuard = scheduleId;
+        sleepiestMinute = i;
+        sleepiestMinuteOccurences = mergedSchedule[scheduleId][i];
+      }
+    }
+  }
+
+  return sleepiestGuard * sleepiestMinute;
+};
+
 (() => {
   const args = process.argv.slice(2);
   const filePath = args[0] || 'day4.txt';
   const content = parseFile(filePath);
   console.log(`part1: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();
