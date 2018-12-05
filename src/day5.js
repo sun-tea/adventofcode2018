@@ -1,24 +1,27 @@
 // Day 5: Chronal Calibration
 import { parseFile } from 'helpers';
 
-const part1 = content => {
+const triggerPolymerReaction = polymer => {
   let index = 0;
   const lower = /[a-z]/;
   const upper = /[A-Z]/;
-  while (index < content.length - 1) {
-    const a = content.charAt(index);
-    const b = content.charAt(index + 1);
+  while (index < polymer.length - 1) {
+    const a = polymer.charAt(index);
+    const b = polymer.charAt(index + 1);
     if (
       a.toLowerCase() === b.toLowerCase() &&
       ((lower.exec(a) && upper.exec(b)) || (lower.exec(b) && upper.exec(a)))
     ) {
-      content = `${content.slice(0, index)}${content.slice(index + 2)}`;
+      polymer = `${polymer.slice(0, index)}${polymer.slice(index + 2)}`;
       index -= 2;
     } else {
       index++;
     }
   }
-  return content.length;
+  return polymer;
+};
+
+const part1 = content => triggerPolymerReaction(content).length;
 };
 
 (() => {
