@@ -25,6 +25,7 @@ const getAllDistancesFromSpecificPoint = (args) => {
     coords,
     pos: { a1, b1 },
   } = args;
+
   return coords.reduce(
     (distances, [a2, b2]) => [
       ...distances,
@@ -45,7 +46,22 @@ const getClosestCoord = compose(
   getAllDistancesFromSpecificPoint
 );
 
-const getGrid = (content) => {
+const checkIfInRange = (args) => {
+  const {
+    coords,
+    pos: { a1, b1 },
+  } = args;
+
+  return (
+    coords.reduce(
+      (distance, [a2, b2]) =>
+        distance + getManhattanDistance({ a1, b1 }, { a2, b2 }),
+      0
+    ) < 10000
+  );
+};
+
+const getGrid = (content, fn) => {
   const { maxX, maxY } = getGridSize(content);
   const coords = content.map((pair) => pair.split(', '));
   let grid = [];
@@ -54,7 +70,7 @@ const getGrid = (content) => {
       if (!grid[b1]) {
         grid[b1] = [];
       }
-      grid[b1][a1] = getClosestCoord({ coords, pos: { a1, b1 } });
+      grid[b1][a1] = fn({ coords, pos: { a1, b1 } });
     }
   }
   return grid;
@@ -70,7 +86,7 @@ const exclude = (infiniteAreasIndexes, value) => {
 };
 
 const part1 = (content) => {
-  const grid = getGrid(content);
+  const grid = getGrid(content, getClosestCoord);
   const limits = [
     ...grid[0],
     ...grid[grid.length - 1],
@@ -102,9 +118,17 @@ const part1 = (content) => {
   return Math.max(...finiteSurfaces.map((s) => s.surface));
 };
 
+const part2 = (content) =>
+  getGrid(content, checkIfInRange).reduce(
+    (sum, row) =>
+      sum + row.reduce((sumRow, loc) => (loc ? ++sumRow : sumRow), 0),
+    0
+  );
+
 (() => {
   const args = process.argv.slice(2);
   const filePath = args[0] || 'day6.txt';
   const content = parseFile(filePath);
   console.log(`part1: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();
