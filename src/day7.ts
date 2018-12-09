@@ -23,17 +23,22 @@ const part1 = (content) => {
     []
   );
 
-  const entryNode = Object.keys(graph).find(
+  const entryNodes = Object.keys(graph).filter(
     (node) => !nodesWithParent.includes(node) && graph[node].length > 0
   );
 
-  const result = getPath(graph, entryNode, [entryNode], []);
+  const firstNode = entryNodes.reduce(
+    (min, n) => (min ? (min > n ? n : min) : n),
+    ''
+  );
+
+  const result = getPath(graph, firstNode, [], entryNodes);
   return result.join('');
 };
 
 const getPath = (graph, node, path, nodes) => {
-  if (graph[node]) {
-    const allNodes = [...graph[node], ...nodes];
+  const allNodes = graph[node] ? [...graph[node], ...nodes] : nodes;
+  if (allNodes.length) {
     const possibleNextNodes = allNodes.reduce((nodes, node) => {
       for (let v in graph) {
         const parent = graph[v].find((e) => e === node);
@@ -48,6 +53,7 @@ const getPath = (graph, node, path, nodes) => {
       ''
     );
     const remainingNodes = possibleNextNodes.filter((n) => n !== nextNode);
+
     return getPath(graph, nextNode, [...path, nextNode], remainingNodes);
   } else {
     return path;
