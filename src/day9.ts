@@ -1,11 +1,7 @@
 // Day 9: Marble Mania
 import { parseFile } from 'helpers';
 
-const part1 = (content) => {
-  const [, nbPlayers, lastMarble] = /(\d+)\D+(\d+)/
-    .exec(content)
-    .map((n) => parseInt(n, 10));
-
+const playMarbleGame = (nbPlayers, lastMarble) => {
   let currentMarble = 0;
   const marbles = { 0: { previous: 0, next: 0 } };
   let currentPlayer = 1;
@@ -40,9 +36,26 @@ const part1 = (content) => {
   return Math.max(...(<number[]>Object.values(scores)));
 };
 
+const part1 = (content) => {
+  const [, nbPlayers, lastMarble] = /(\d+)\D+(\d+)/
+    .exec(content)
+    .map((n) => parseInt(n, 10));
+
+  return playMarbleGame(nbPlayers, lastMarble);
+};
+
+const part2 = (content) => {
+  const [, nbPlayers, lastMarble] = /(\d+)\D+(\d+)/
+    .exec(content)
+    .map((n) => parseInt(n, 10));
+
+  return playMarbleGame(nbPlayers, lastMarble * 100);
+};
+
 (() => {
   const args = process.argv.slice(2);
   const filePath = args[0] || 'day9.txt';
   const [content] = parseFile(filePath);
   console.log(`part1: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();
