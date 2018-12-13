@@ -43,7 +43,7 @@ const computeMeasurement = (stars) => {
   return { width: width, height: height };
 };
 
-const part1 = (content) => {
+const getMessageInSky = (positions) => {
   const regex = /.+?(-?\d+).+?(-?\d+).+?(-?\d+).+?(-?\d+).+?/g;
 
   let position;
@@ -51,7 +51,7 @@ const part1 = (content) => {
   const sky = [];
   const measurements = [];
 
-  while ((position = regex.exec(content)) !== null) {
+  while ((position = regex.exec(positions)) !== null) {
     const [, x, y, moveX, moveY] = position.map((i) => parseInt(i, 10));
     stars.push({ x, y, moveX, moveY });
     regex.lastIndex;
@@ -76,7 +76,17 @@ const part1 = (content) => {
       measurements[measurements.length - 2].height
   );
 
-  return printSky(sky[sky.length - 2]);
+  return sky;
+};
+
+const part1 = (content) => {
+  const stars = getMessageInSky(content);
+  return printSky(stars[stars.length - 2]);
+};
+
+const part2 = (content) => {
+  const stars = getMessageInSky(content);
+  return stars.length - 2;
 };
 
 (() => {
@@ -84,4 +94,5 @@ const part1 = (content) => {
   const filePath = args[0] || 'day10.txt';
   const content = parseFile(filePath);
   console.log(`part1: \n${part1(content)}`);
+  console.log(`part2: \n${part2(content)}`);
 })();
