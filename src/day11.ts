@@ -24,7 +24,7 @@ const sumOfSquare = (
     ? summedAreaTable[x - size][y - size]
     : 0);
 
-const part1 = (serialNumber: number) => {
+const getCoordsOfTopLeftSquare = (serialNumber: number, size: number) => {
   const summedAreaTable = [];
   const summedSquareTable = [];
 
@@ -40,7 +40,7 @@ const part1 = (serialNumber: number) => {
         (summedAreaTable[i - 1] && summedAreaTable[i - 1][j - 1]
           ? summedAreaTable[i - 1][j - 1]
           : 0);
-      summedSquareTable[i][j] = sumOfSquare(3, i, j, summedAreaTable);
+      summedSquareTable[i][j] = sumOfSquare(size, i, j, summedAreaTable);
     }
   }
 
@@ -51,15 +51,40 @@ const part1 = (serialNumber: number) => {
     row.map((cell, j) => {
       if (maxFuelValue < cell) {
         maxFuelValue = cell;
-        x = i - 1 || null;
-        y = j - 1 || null;
+        x = i - size + 2 || null;
+        y = j - size + 2 || null;
       }
     });
   });
-  return { x, y };
+  return { x, y, maxFuelValue };
+};
+
+const part1 = (serialNumber: number) =>
+  getCoordsOfTopLeftSquare(serialNumber, 3);
+
+const part2 = (serialNumber: number) => {
+  let size = 1;
+  let { x: xMax, y: yMax, maxFuelValue: maxFuel } = getCoordsOfTopLeftSquare(
+    serialNumber,
+    size
+  );
+
+  for (let i = 2; i <= 300; i++) {
+    const { x, y, maxFuelValue } = getCoordsOfTopLeftSquare(serialNumber, i);
+    if (maxFuelValue > maxFuel) {
+      maxFuel = maxFuelValue;
+      xMax = x;
+      yMax = y;
+      size = i;
+    }
+  }
+
+  return { xMax, yMax, size };
 };
 
 (() => {
   const { x, y } = part1(8141);
   console.log(`part1: {${x}, ${y}}`);
+  const { xMax, yMax, size } = part2(8141);
+  console.log(`part2: {${xMax}, ${yMax}, ${size}}`);
 })();
