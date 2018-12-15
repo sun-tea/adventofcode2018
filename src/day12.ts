@@ -20,7 +20,7 @@ const printPlants = (plants: Pot[], start: number, end: number) => {
   return output;
 };
 
-const part1 = (content) => {
+const growPlants = (content, finalGen: number) => {
   const initialStateRegex = /initial state: ((?:#|\.)+)/;
   const ruleRegex = /((?:#|\.)+) => (#|\.)/g;
   const rules = [];
@@ -43,7 +43,7 @@ const part1 = (content) => {
     )
   );
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < finalGen; i++) {
     const minId = getMin(generations[i]);
     const maxId = getMax(generations[i]);
     const nextGen = [];
@@ -94,7 +94,20 @@ const part1 = (content) => {
     0
   );
 
-  return score;
+  return { score, lastGenState: generations[generations.length - 1] };
+};
+
+const part1 = (content: string[]) => growPlants(content, 20).score;
+
+const part2 = (content: string[]) => {
+  const { score, lastGenState } = growPlants(content, 120); // magic number of which I noticed the plants are doing a pattern
+
+  const nbPlants = lastGenState.reduce(
+    (nb, pot) => (pot.state === '#' ? nb + 1 : nb),
+    0
+  );
+
+  return 49999999880 * nbPlants + score;
 };
 
 const findPot = (pots: Pot[], searchedId: number) => {
@@ -107,4 +120,5 @@ const findPot = (pots: Pot[], searchedId: number) => {
   const filePath = args[0] || 'day12.txt';
   const content = parseFile(filePath);
   console.log(`part1: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();
