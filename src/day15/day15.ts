@@ -15,7 +15,7 @@ import {
   Unit,
 } from './utils';
 
-const part1 = (content: string[]) => {
+const part1 = (content: string[], points = undefined) => {
   const map: Map = [];
   let units: Unit[] = [];
 
@@ -75,7 +75,11 @@ const part1 = (content: string[]) => {
           }
 
           if (!closestEnemy.path.length) {
-            units = attackUnit(units, closestEnemy.target);
+            units = attackUnit(
+              units,
+              closestEnemy.target,
+              points && points[unit.team]
+            );
           }
         }
       }
@@ -98,14 +102,19 @@ const part1 = (content: string[]) => {
   const remainingHPs = getRemainingHP(units);
   const output = round * remainingHPs;
   console.log(displayMap(map, units));
+  console.log(units);
 
   return output;
 };
 
-const attackUnit = (units: Unit[], unit: Unit) => {
+const part2 = (content: string[]) => {
+  return part1(content, { E: 26, G: 3 });
+};
+
+const attackUnit = (units: Unit[], unit: Unit, points: number = 3) => {
   const i = units.findIndex(u => u.x === unit.x && u.y === unit.y);
-  if (units[i].HP >= 3) {
-    units[i].HP -= 3;
+  if (units[i].HP >= points) {
+    units[i].HP -= points;
   } else {
     units[i] = {
       team: null,
@@ -282,4 +291,5 @@ const moveByOne = (
   const filePath = args[0] || 'day15.txt';
   const content = parseFile(filePath);
   console.log(`part1: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();
