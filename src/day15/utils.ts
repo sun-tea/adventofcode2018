@@ -20,26 +20,25 @@ export interface PositionWithAdjacentsMoves extends Coords {
 
 export type Graph = PositionWithAdjacentsMoves[];
 
-export const displayMap = (map: Map, units: Unit[]) => {
-  const displayedMap = map.reduce(
-    (displayedMap, row, x) => {
-      const lines = row.reduce((lines, value, y) => {
-        const unit = units.find((unit) => unit.x === x && unit.y === y);
-        const squareValue = unit ? unit.team : value;
-        if (lines[y]) {
-          lines[y] += squareValue;
-        } else {
-          lines[y] = squareValue;
-        }
+export const displayMap = (map: Map, units: Unit[]) =>
+  map
+    .reduce(
+      (displayedMap, row, x) => {
+        const lines = row.reduce((lines, value, y) => {
+          const unit = units.find(unit => unit.x === x && unit.y === y);
+          const squareValue = unit ? unit.team : value;
+          if (lines[y]) {
+            lines[y] += squareValue;
+          } else {
+            lines[y] = squareValue;
+          }
+          return lines;
+        }, displayedMap);
         return lines;
-      }, displayedMap);
-      return lines;
-    },
-    ['']
-  );
-
-  return displayedMap;
-};
+      },
+      ['']
+    )
+    .join('\n');
 
 /**
  * Returns immediate neighbours (up to 4) of a given position in the map.
@@ -83,13 +82,15 @@ export const getCardinalNeighbours = (
 export const getRemainingHP = (units: Unit[]) =>
   units.reduce((count, u) => count + u.HP, 0);
 
-export const hasBattleEnded = (units: Unit[]) =>
-  units.reduce(
-    (count, u, i, units) => (u.team === units[0].team ? ++count : count),
-    0
-  ) === units.length
-    ? true
-    : false;
+export const hasBattleEnded = (units: Unit[]) => {
+  const aliveUnits = units.filter(({ team }) => team);
+  return (
+    aliveUnits.reduce(
+      (count, u, i, units) => (u.team === units[0].team ? ++count : count),
+      0
+    ) === aliveUnits.length
+  );
+};
 
 /**
  * Returns what is at a given position in the map. Can be a wall ('#'),
@@ -102,8 +103,44 @@ export const getValueOfSquare = (
   units: Unit[],
   map: Map
 ) => {
-  const unit = units.find((unit) => x === unit.x && y === unit.y);
+  const unit = units.find(unit => x === unit.x && y === unit.y && unit.team);
   return unit ? unit.team : map[x] ? map[x][y] : null;
+};
+
+export const sortEnemiesByProximityAndHP = (
+  {
+    closestEnemies,
+    shortestPathCount,
+  }: {
+    closestEnemies: { target: Unit; path: Coords[] }[];
+    shortestPathCount: number;
+  },
+  enemy: { target: Unit; path: Coords[] }
+) => {
+  if (
+    typeof shortestPathCount === 'undefined' ||
+    enemy.path.length < shortestPathCount
+  ) {
+    shortestPathCount = enemy.path.length;
+    return { closestEnemies: [enemy], shortestPathCount };
+  } else if (enemy.path.length === shortestPathCount) {
+    // if enemies are directly reachable
+    if (shortestPathCount === 0) {
+      return {
+        closestEnemies: [...closestEnemies, enemy].sort(
+          (a, b) =>
+            a.target.HP - b.target.HP ||
+            a.target.y - b.target.y ||
+            a.target.x - b.target.x
+        ),
+        shortestPathCount,
+      };
+    }
+    // if same move cost
+    return { closestEnemies: [...closestEnemies, enemy], shortestPathCount };
+  } else {
+    return { closestEnemies, shortestPathCount };
+  }
 };
 
 /**
@@ -112,4 +149,4 @@ export const getValueOfSquare = (
  * Must be used at the beginning of a round.
  *
  */
-export const sortUnits = (a: Unit, b: Unit) => a.y - b.y || a.x - b.x;
+export const sortUnits = (a: Coords, b: Coords) => a.y - b.y || a.x - b.x;
