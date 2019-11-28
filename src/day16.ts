@@ -3,6 +3,73 @@ import { parseFile } from './helpers';
 
 const regex = new RegExp('\\d+', 'g');
 
+export type OpcodesByNumber = {
+  1?: {
+    i: number;
+    op: object;
+  };
+  2?: {
+    i: number;
+    op: object;
+  };
+  3?: {
+    i: number;
+    op: object;
+  };
+  4?: {
+    i: number;
+    op: object;
+  };
+  5?: {
+    i: number;
+    op: object;
+  };
+  6?: {
+    i: number;
+    op: object;
+  };
+  7?: {
+    i: number;
+    op: object;
+  };
+  8?: {
+    i: number;
+    op: object;
+  };
+  9?: {
+    i: number;
+    op: object;
+  };
+  10?: {
+    i: number;
+    op: object;
+  };
+  11?: {
+    i: number;
+    op: object;
+  };
+  12?: {
+    i: number;
+    op: object;
+  };
+  13?: {
+    i: number;
+    op: object;
+  };
+  14?: {
+    i: number;
+    op: object;
+  };
+  15?: {
+    i: number;
+    op: object;
+  };
+  16?: {
+    i: number;
+    op: object;
+  };
+};
+
 const part1 = (content: string[]) => {
   const samples = content
     .join('-')
@@ -44,6 +111,67 @@ const part1 = (content: string[]) => {
   });
 
   return matchingSamples;
+};
+
+const part2 = (content: string[]) => {
+  const input = content.join('-').split('----');
+  const samples = input[0].split('--');
+  const testProgram = input[1];
+  const opcodesByNumber: OpcodesByNumber = {};
+
+  let j = 0;
+  // try to match each opcode with its id number
+  while (Object.keys(opcodesByNumber).length < 16) {
+    samples.some(sample => {
+      sample.split('-');
+      const [
+        reg0,
+        reg1,
+        reg2,
+        reg3,
+        opcode,
+        A,
+        B,
+        C,
+        output0,
+        output1,
+        output2,
+        output3,
+      ] = sample.match(regex).map(i => parseInt(i, 10));
+
+      const register = [reg0, reg1, reg2, reg3];
+      const output = [output0, output1, output2, output3];
+      let matchingOp;
+      let tempMatches;
+
+      if (!opcodesByNumber[opcode]) {
+        for (let i = 0; i < opcodes.length; i++) {
+          if (Object.values(opcodesByNumber).find(op => op.i === i)) {
+            continue;
+          }
+          tempMatches = opcodes[i](register, { A, B, C }, output)
+            ? { i, op: opcodes[i] }
+            : null;
+
+          if (tempMatches && matchingOp) {
+            break;
+          }
+          matchingOp = tempMatches ? tempMatches : matchingOp;
+          tempMatches = null;
+
+          // current sample has only one possible matching opcode
+          if (i === opcodes.length - 1) {
+            opcodesByNumber[opcode] = matchingOp;
+            console.log(opcodesByNumber);
+          }
+        }
+      }
+
+      return Object.keys(opcodesByNumber).length === 16;
+    });
+  }
+
+  return Object.entries(opcodesByNumber);
 };
 
 // addr -- add register
@@ -128,5 +256,5 @@ const opcodes = [
   const filePath = args[0] || 'day16.txt';
   const content = parseFile(filePath);
   // console.log(`part1: ${part1(content)}`);
-  console.log(`part2: ${part1(content)}`);
+  console.log(`part2: ${part2(content)}`);
 })();
