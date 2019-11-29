@@ -3,71 +3,13 @@ import { parseFile } from './helpers';
 
 const regex = new RegExp('\\d+', 'g');
 
-export type OpcodesByNumber = {
-  1?: {
-    i: number;
-    op: object;
-  };
-  2?: {
-    i: number;
-    op: object;
-  };
-  3?: {
-    i: number;
-    op: object;
-  };
-  4?: {
-    i: number;
-    op: object;
-  };
-  5?: {
-    i: number;
-    op: object;
-  };
-  6?: {
-    i: number;
-    op: object;
-  };
-  7?: {
-    i: number;
-    op: object;
-  };
-  8?: {
-    i: number;
-    op: object;
-  };
-  9?: {
-    i: number;
-    op: object;
-  };
-  10?: {
-    i: number;
-    op: object;
-  };
-  11?: {
-    i: number;
-    op: object;
-  };
-  12?: {
-    i: number;
-    op: object;
-  };
-  13?: {
-    i: number;
-    op: object;
-  };
-  14?: {
-    i: number;
-    op: object;
-  };
-  15?: {
-    i: number;
-    op: object;
-  };
-  16?: {
-    i: number;
-    op: object;
-  };
+type Operation = {
+  code?: number;
+  op: (input: Array<number>, instruction: { A: number; B: number }) => number;
+};
+
+export type OperationsByCode = {
+  [index: string]: Operation;
 };
 
 const part1 = (content: string[]) => {
@@ -78,30 +20,20 @@ const part1 = (content: string[]) => {
 
   let matchingSamples = 0;
 
+  const operations = Object.values(opcodes);
+
   samples.forEach(sample => {
     sample.split('-');
-    const [
-      reg0,
-      reg1,
-      reg2,
-      reg3,
-      opcode,
-      A,
-      B,
-      C,
-      output0,
-      output1,
-      output2,
-      output3,
-    ] = sample.match(regex).map(i => parseInt(i, 10));
+    const [reg0, reg1, reg2, reg3, , A, B, C, ...output] = sample
+      .match(regex)
+      .map(i => parseInt(i, 10));
 
     const register = [reg0, reg1, reg2, reg3];
-    const output = [output0, output1, output2, output3];
 
     let opcodesMatchesCount = 0;
 
-    for (const opcode of opcodes) {
-      opcodesMatchesCount += opcode(register, { A, B, C }, output) ? 1 : 0;
+    for (const opcode of operations) {
+      opcodesMatchesCount += opcode(register, { A, B }) === output[C] ? 1 : 0;
 
       if (opcodesMatchesCount === 3) {
         matchingSamples++;
@@ -119,129 +51,134 @@ const part2 = (content: string[]) => {
     sample.split('-');
     return sample.match(regex).map(i => parseInt(i, 10));
   });
-  const testProgram = input[1];
-  const opcodesByNumber: OpcodesByNumber = {};
+  const operations = Object.entries(opcodes);
 
-  let remainingSamplesWithUnmatchedOpcodes;
+  const operationsByCode: OperationsByCode = operations.reduce(
+    (operations, [opcode, op]) => ({
+      ...operations,
+      [opcode]: {
+        op,
+      },
+    }),
+    {}
+  );
+
   // try to match each opcode with its id number
-  while (Object.keys(opcodesByNumber).length < 16) {
+  while (
+    Object.values(operationsByCode).filter(
+      ({ code }) => typeof code !== 'undefined'
+    ).length < 16
+  ) {
     // bypass samples with opcode already matched
     const remainingSamples = samples.filter(
-      ([opcode]) => !opcodesByNumber[opcode]
+      ([, , , , opcode]) =>
+        !Object.values(operationsByCode).find(({ code }) => code === opcode)
     );
 
-    const checkRemainingSamples = remainingSamples.length;
-    if (remainingSamplesWithUnmatchedOpcodes === checkRemainingSamples) {
-      console.log('stuck');
-      break;
-    } else {
-      remainingSamplesWithUnmatchedOpcodes = checkRemainingSamples;
-    }
-
     remainingSamples.forEach(
-      ([
-        reg0,
-        reg1,
-        reg2,
-        reg3,
-        opcode,
-        A,
-        B,
-        C,
-        output0,
-        output1,
-        output2,
-        output3,
-      ]) => {
-        const register = [reg0, reg1, reg2, reg3];
-        const output = [output0, output1, output2, output3];
-        let matchingOp;
-        let tempMatches;
+      ([reg0, reg1, reg2, reg3, opcode, A, B, C, ...output]) => {
+        const input = [reg0, reg1, reg2, reg3];
 
-        for (let i = 0; i < opcodes.length; i++) {
-          if (Object.values(opcodesByNumber).find(op => op.i === i)) {
-            continue;
-          }
-          tempMatches = opcodes[i](register, { A, B, C }, output)
-            ? { i, op: opcodes[i] }
-            : null;
+        operations.reduce((matchingOps, [code, op], index) => {
+          const matchingOp = op(input, { A, B }) === output[C];
 
-          if (tempMatches && matchingOp) {
-            break;
+          if (matchingOp) {
+            matchingOps.push(code);
           }
-          matchingOp = tempMatches ? tempMatches : matchingOp;
-          tempMatches = null;
 
-          // current sample has only one possible matching opcode
-          if (i === opcodes.length - 1) {
-            opcodesByNumber[opcode] = matchingOp;
-            console.log(opcodesByNumber);
+          if (index === operations.length - 1) {
+            // filtering out the operations already matched to their code
+            const notYetMatchedOpcodes = matchingOps.filter(
+              matchingOpcode =>
+                !Object.entries(operationsByCode).find(
+                  ([code, value]) =>
+                    matchingOpcode === code && typeof value.code !== 'undefined'
+                )
+            );
+
+            // current sample has only one possible matching opcode
+            if (notYetMatchedOpcodes.length === 1) {
+              operationsByCode[notYetMatchedOpcodes[0]].code = opcode;
+            }
           }
-        }
+          return matchingOps;
+        }, []);
       }
     );
   }
+
+  const instructions = input[1]
+    .split('-')
+    .map(sample => sample.match(regex))
+    .map(operation => operation.map(i => parseInt(i, 10)));
+
+  const result = instructions.reduce(
+    (input, [opcode, A, B, C]) => {
+      const op = Object.entries(operationsByCode).find(
+        ([, { code }]) => code === opcode
+      )[1].op;
+      input[C] = op(input, { A, B });
+      return input;
+    },
+    [0, 0, 0, 0]
+  );
+
+  return result;
 };
 
 // addr -- add register
-const addr = (register, { A, B, C }, output) =>
-  register[A] + register[B] === output[C];
+const addr = (input: Array<number>, { A, B }): number => input[A] + input[B];
 
 // addi -- add immediate
-const addi = (register, { A, B, C }, output) => register[A] + B === output[C];
+const addi = (input: Array<number>, { A, B }): number => input[A] + B;
 
 // mulr -- multiply register
-const mulr = (register, { A, B, C }, output) =>
-  register[A] * register[B] === output[C];
+const mulr = (input: Array<number>, { A, B }): number => input[A] * input[B];
 
 // muli -- multiply immediate
-const muli = (register, { A, B, C }, output) => register[A] * B === output[C];
+const muli = (input: Array<number>, { A, B }): number => input[A] * B;
 
 // banr -- bitwise AND register
-const banr = (register, { A, B, C }, output) =>
-  (register[A] & register[B]) === output[C];
+const banr = (input: Array<number>, { A, B }): number => input[A] & input[B];
 
 // bani --  bitwise AND immediate
-const bani = (register, { A, B, C }, output) => (register[A] & B) === output[C];
+const bani = (input: Array<number>, { A, B }): number => input[A] & B;
 
 // borr -- bitwise OR register
-const borr = (register, { A, B, C }, output) =>
-  (register[A] | register[B]) === output[C];
+const borr = (input: Array<number>, { A, B }): number => input[A] | input[B];
 
 // bori --  bitwise OR immediate
-const bori = (register, { A, B, C }, output) => (register[A] | B) === output[C];
+const bori = (input: Array<number>, { A, B }): number => input[A] | B;
 
 // setr -- set register
-const setr = (register, { A, B, C }, output) => register[A] === output[C];
+const setr = (input: Array<number>, { A }): number => input[A];
 
 // seti -- set immediate
-const seti = (register, { A, B, C }, output) => A === output[C];
+const seti = (input: Array<number>, { A }): number => A;
 
-// gtir -- greater-than immediate/register
-const gtir = (register, { A, B, C }, output) =>
-  (A > register[B] ? 1 : 0) === output[C];
+// gtir -- greainputter-than immediate/register
+const gtir = (input: Array<number>, { A, B }): number => (A > input[B] ? 1 : 0);
 
 // gtri -- greater-than register/immediate
-const gtri = (register, { A, B, C }, output) =>
-  (register[A] > B ? 1 : 0) === output[C];
+const gtri = (input: Array<number>, { A, B }): number => (input[A] > B ? 1 : 0);
 
 // gtrr -- greater-than register/register
-const gtrr = (register, { A, B, C }, output) =>
-  (register[A] > register[B] ? 1 : 0) === output[C];
+const gtrr = (input: Array<number>, { A, B }): number =>
+  input[A] > input[B] ? 1 : 0;
 
 // eqir -- equal immediate/register
-const eqir = (register, { A, B, C }, output) =>
-  (A === register[B] ? 1 : 0) === output[C];
+const eqir = (input: Array<number>, { A, B }): number =>
+  A === input[B] ? 1 : 0;
 
 // eqri -- equal register/immediate
-const eqri = (register, { A, B, C }, output) =>
-  (register[A] === B ? 1 : 0) === output[C];
+const eqri = (input: Array<number>, { A, B }): number =>
+  input[A] === B ? 1 : 0;
 
 // eqrr -- equal register/register
-const eqrr = (register, { A, B, C }, output) =>
-  (register[A] === register[B] ? 1 : 0) === output[C];
+const eqrr = (input: Array<number>, { A, B }): number =>
+  input[A] === input[B] ? 1 : 0;
 
-const opcodes = [
+const opcodes = {
   addr,
   addi,
   mulr,
@@ -258,12 +195,12 @@ const opcodes = [
   eqir,
   eqri,
   eqrr,
-];
+};
 
 (() => {
   const args = process.argv.slice(2);
   const filePath = args[0] || 'day16.txt';
   const content = parseFile(filePath);
-  // console.log(`part1: ${part1(content)}`);
+  console.log(`part1: ${part1(content)}`);
   console.log(`part2: ${part2(content)}`);
 })();
