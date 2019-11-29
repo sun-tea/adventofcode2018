@@ -115,16 +115,31 @@ const part1 = (content: string[]) => {
 
 const part2 = (content: string[]) => {
   const input = content.join('-').split('----');
-  const samples = input[0].split('--');
+  const samples = input[0].split('--').map(sample => {
+    sample.split('-');
+    return sample.match(regex).map(i => parseInt(i, 10));
+  });
   const testProgram = input[1];
   const opcodesByNumber: OpcodesByNumber = {};
 
-  let j = 0;
+  let remainingSamplesWithUnmatchedOpcodes;
   // try to match each opcode with its id number
   while (Object.keys(opcodesByNumber).length < 16) {
-    samples.some(sample => {
-      sample.split('-');
-      const [
+    // bypass samples with opcode already matched
+    const remainingSamples = samples.filter(
+      ([opcode]) => !opcodesByNumber[opcode]
+    );
+
+    const checkRemainingSamples = remainingSamples.length;
+    if (remainingSamplesWithUnmatchedOpcodes === checkRemainingSamples) {
+      console.log('stuck');
+      break;
+    } else {
+      remainingSamplesWithUnmatchedOpcodes = checkRemainingSamples;
+    }
+
+    remainingSamples.forEach(
+      ([
         reg0,
         reg1,
         reg2,
@@ -137,14 +152,12 @@ const part2 = (content: string[]) => {
         output1,
         output2,
         output3,
-      ] = sample.match(regex).map(i => parseInt(i, 10));
+      ]) => {
+        const register = [reg0, reg1, reg2, reg3];
+        const output = [output0, output1, output2, output3];
+        let matchingOp;
+        let tempMatches;
 
-      const register = [reg0, reg1, reg2, reg3];
-      const output = [output0, output1, output2, output3];
-      let matchingOp;
-      let tempMatches;
-
-      if (!opcodesByNumber[opcode]) {
         for (let i = 0; i < opcodes.length; i++) {
           if (Object.values(opcodesByNumber).find(op => op.i === i)) {
             continue;
@@ -166,12 +179,8 @@ const part2 = (content: string[]) => {
           }
         }
       }
-
-      return Object.keys(opcodesByNumber).length === 16;
-    });
+    );
   }
-
-  return Object.entries(opcodesByNumber);
 };
 
 // addr -- add register
